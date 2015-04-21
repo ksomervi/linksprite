@@ -1,0 +1,3 @@
+[submodule "serialport"]
+	path = serialport
+	url = https://github.com/ksomervi/serialport
