@@ -3,7 +3,7 @@
 #include <cstring>     /* String function definitions */
 #include <fcntl.h>     /* File control definitions */
 #include <getopt.h>
-#include <termios.h>
+//#include <termios.h>
 
 #include "configuration.h"
 

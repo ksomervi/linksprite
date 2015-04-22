@@ -11,7 +11,7 @@ CXX = i686-pc-mingw32-g++
 
 CXXFLAGS += -DWIN32
 
-LDFLAGS = -static-libstdc++ -static-libgcc
+LDFLAGS = -static-libstdc++ -static-libgcc -lcm
 FL_LDFLAGS = -mwindows -lfltk -lole32 -luuid -lcomctl32 $(LDFLAGS)
 
 else
@@ -56,7 +56,7 @@ TARGETS = lscon lsui
 
 .PHONY: default all neat clean subdirs $(SUBDIRS)
 
-default: lsui
+default: lscon
 
 all: $(TARGETS)
 
