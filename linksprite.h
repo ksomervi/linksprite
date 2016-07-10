@@ -23,20 +23,31 @@
 #ifndef _LINKSPRITE_H
 #define _LINKSPRITE_H
 
-#include <map>
-using std::map;
-using std::pair;
+#include <vector>
+using std::vector;
+
+#include <iostream>
+using std::ostream;
 
 #include <string>
 using std::string;
 
 #include "serialport/communication_manager.h"
+//#include "ostream_log.h"
 
 namespace blip {
 
 #ifndef INVALID_SIZE
 #define INVALID_SIZE -1
 #endif
+
+#define LS_MIN_PKT_SZ 8
+#define LS_DEFAULT_PKT_SZ 32
+#define CMD_PKT_SZ_OFFSET 13 //byte in command array buffer
+
+#define ADDR2_OFFSET  7
+#define ADDR1_OFFSET  8
+#define ADDR0_OFFSET  9
 
 class linksprite {
 public:
@@ -48,54 +59,69 @@ public:
     format_option(unsigned char, string);
   };
 
+  class data_frame {
+    public:
+      int offset;
+      int length;
+      uint8_t *data;
+  };
+
 private:
   communication_manager * _cm;
+  vector< format_option > _img_geometries;
 
-  map< int, format_option > _img_sizes;
+  //base_log * _mlog;
 
-  void _init_image_sizes();
+  void _init_image_geometries();
 
   unsigned char _rxbuf[32];//used for debugging
-  //unsigned char _rxlog[];//used for debugging
-  //unsigned char _txbuf[32];
-  bool _validate_msg(unsigned char * exp, unsigned char * act, int n);
-  int _buffered_image_size;
+  unsigned char _txbuf[32];
+  bool _validate_msg(unsigned char * exp, unsigned char * act, int32_t n);
 
-  void _print_buf(const char *, unsigned char *, int);
+  int32_t _packet_size;
+  int32_t _buffered_image_size;
+  uint8_t * _img_buffer;
+  uint8_t _tx_msize;
+
+  void _log_tx_msg(unsigned char *, size_t);
+  void _dbg_msg(const char*);
+  void _dbg_msg(const char *, unsigned char *, size_t);
+
+  bool _log_to_console;
 
 public:
   // Constructor
   linksprite();
 
   // Interface control
-  bool open(const char *, int);
+  bool open(const char *, int32_t);
   void close();
   bool is_open();
   char * port_name();
-  int baudrate();
+  int32_t baudrate();
 
   // Reset the camera. Wait 2-3 seconds before taking a picture.
   void reset();
-  unsigned int read_image_size();
+  void set_image_geometry(uint8_t);
   void take_image();
-  int download_image(string);
-  void set_image_size();
-  void set_image_size(uint8_t);
+  uint32_t read_image_size();
+  int32_t download_image();
+  uint32_t read_frame(data_frame*);
+  uint8_t packet_size();
+  void packet_size(uint8_t);
+  //uint8_t poll_comm(uint8_t*, size_t);
+  uint8_t poll_comm(uint8_t*);
+  uint8_t * image_buffer();
+  vector< format_option > get_geometry_options();
 
-  //void quiet(bool);
-  //bool quiet();
+  void log_to_console(bool);
+  bool log_to_console();
 
-};
-};
+  uint8_t tx_buffer(unsigned char *);
 
-/*
-//Camera commands
-void reset_camera(communication_manager *);
-unsigned int read_image_size(communication_manager *);
-void take_image(communication_manager *);
-int download_image(communication_manager *);
-void set_image_size(communication_manager *);
-*/
+
+};//end class linksprite
+};//end namespace blip
 
 // Length of image: 56 00 34 01 00
 // Ack: 76 00 34 00 04 00 Byte2 Byte1 Byte0

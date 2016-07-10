@@ -1,7 +1,7 @@
+// Filename: configuration.h
+// Author: Kevin Somervill
+// Date: Sun Apr 26 11:26:56 EDT 2015
 #ifndef CONSOLE_APP_CONFIGURATION_H
-/*
- *
- */
 #define CONSOLE_APP_CONFIGURATION_H
 #include <getopt.h>
 
@@ -13,6 +13,7 @@ class configuration {
     int    _baud;
     bool   _con;
     bool   _help;
+    bool   _list;
 
   public:
 
@@ -23,9 +24,11 @@ class configuration {
     void baudrate(int);
     void help(bool);
     bool help(void);
-    void console(bool);
-    bool console(void);
+    void console(bool);//unused - later this will be to integrate the UI
+    bool console(void);//unused - later this will be to integrate the UI
     bool parse_options (int, char **);
+    void list(bool);
+    bool list(void);
 
 };
 

@@ -20,6 +20,7 @@ configuration::configuration() {
   _baud = CONSOLE_DEFAULT_BAUD;
   _con = false;
   _help = false;
+  _list = false;
 }
 
 void configuration::serialport (const char *port) {
@@ -51,6 +52,14 @@ bool configuration::help(void) {
   return _help;
 }
     
+void configuration::list(bool l) {
+  _list = l;
+}
+
+bool configuration::list(void) {
+  return _list;
+}
+
 void configuration::console(bool c) {
   _con = c;
 }
@@ -70,18 +79,21 @@ bool configuration::parse_options (int argc, char *argv[]) {
   int option_index = 0, opt;
 
   while(parsing_options) {
-    opt = getopt_long (argc, argv, "hcp:b:s",
+    opt = getopt_long (argc, argv, "hcp:b:l",
                        loptions, &option_index);
 
     switch (opt) {
-      case 'h':
-        this->help(true);
+      case 'b':
+        this->baudrate(strtol(optarg,NULL,10));
         break;
       case 'c':
         this->console(true);
         break;
-      case 'b':
-        this->baudrate(strtol(optarg,NULL,10));
+      case 'h':
+        this->help(true);
+        break;
+      case 'l':
+        this->list(true);
         break;
       case 'p':
         this->serialport(optarg);

@@ -2,6 +2,10 @@
 *~
 *.bak
 
+# Image files
+*.jpg
+*.png
+
 # Compiled Object files
 *.slo
 *.lo
@@ -17,9 +21,6 @@
 *.dylib
 *.dll
 
-# Fortran module files
-*.mod
-
 # Compiled Static libraries
 *.lai
 *.la
@@ -27,6 +28,8 @@
 *.lib
 
 # Executables
+lsui
+lscon
 *.exe
 *.out
 *.app
