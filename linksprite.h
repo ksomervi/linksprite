@@ -1,7 +1,7 @@
-// Filename: linksprite.cpp
+// Filename: linksprite.h
 //
 // Provide interface to control a Link Sprite 2MP camera.
-// Copyright (C) 2105  Kevin Somervill
+// Copyright (C) 2015  Kevin Somervill
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
