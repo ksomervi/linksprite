@@ -84,6 +84,7 @@ void show_console_help() {
     << "  r|R   Reset the camera" << endl
     << "  s     Set image size" << endl
     << "  t|T   Take image" << endl
+    << "  v|V   Show version" << endl
     << "  x     eXit" << endl
     << " The rest are yet to be implemented" << endl;
 }
@@ -210,6 +211,11 @@ void start_console(configuration *cfg) {
       case 'T':
         cout << "Taking image..." << endl;
         ls->take_image();
+        break;
+
+      case 'v':
+      case 'V':
+        cout << " lscon - Version " << LSCON_VERSION << endl;
         break;
 
       default:
