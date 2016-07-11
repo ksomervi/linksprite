@@ -199,7 +199,7 @@ int linksprite::download_image() {
   int i = 0;
   size_t expected_packets;
   size_t packet_count = 0;
-  unsigned char _rxbuf[32];//used for debugging
+  unsigned char* _rdbuf = NULL;
 
   unsigned char cmd_buf[] = {
     0x56, 0x00, 0x32, 0x0c, 0x00, 0x0a, // [0-5] - Command header
@@ -228,6 +228,8 @@ int linksprite::download_image() {
   _packet_size = ( (size_t)(cmd_buf[11]<<16) & 0x00FF0000)
                | ( (size_t)(cmd_buf[12]<<8)  & 0x0000FF00)
                | ( (size_t)(cmd_buf[13])     & 0x000000FF);
+
+  _rdbuf = new uint8_t[_packet_size];
 
   if (_log_to_console) {
     _dbg_msg((char*)"Downloading image ...");
@@ -261,7 +263,7 @@ int linksprite::download_image() {
     while ((i < _packet_size) and (end_of_image == false)) {
       //Receive the data bytes
       _cm->receive(data_p, 1);
-      _rxbuf[i] = *data_p;
+      _rdbuf[i] = *data_p;
       i++;
       if ((*data_last == 0xFF) and (*data_p == 0xD9)) {
         end_of_image = true;
@@ -281,11 +283,11 @@ int linksprite::download_image() {
       if (_log_to_console) {
         //Show last data packet
         _dbg_msg((char*)"\nlast data packet...");
-        _dbg_msg((char *)"rx", _rxbuf, i);
+        _dbg_msg((char *)"rd", _rdbuf, i);
       }
       //Clear zeros in packet
       do {
-        _cm->receive(_rxbuf, 1);
+        _cm->receive(_rdbuf, 1);
       } while (_rxbuf[0] == 0);
       //Receive the packet frame trailer
       _cm->receive(&_rxbuf[1], 4);
@@ -313,26 +315,34 @@ int linksprite::download_image() {
 //Currently unused, stay tuned.
 uint32_t linksprite::read_frame(data_frame *f) {
   uint32_t sz = 0;
-  uint8_t cmd_buf[] = {0x56, 0x00, 0x32, 0x0c, 0x00, 0x0a, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x0a};
+  uint8_t cmd_buf[] = {
+    0x56, 0x00, 0x32, 0x0c, 0x00, 0x0a, // [0-5] - Command header
+    0x00,                               // [6] - unused
+    0x00, 0x00, 0x00,                   // [7-9] - Address of read
+    0x00,                               // [10] - unused
+    0x00, 0x00, 0x20,                   // [11-13] - Size of returned to be
+                                        // read, multiple of 8
+    0x00, 0x0a};                        // [14-15] - Trailer
   bool end_of_image = false;
+  uint8_t * _rdbuf = NULL;
   int i;
 
   // Frame: offset, length, *data
   int adr = f->offset;
-  int p_size = packet_size();
+  //int p_size = packet_size();
+  _rdbuf = new uint8_t[_packet_size];
   /*
   if (_log_stream) {
     _log_stream << "p_size: " << p_size << endl;
   }
   */
-  cmd_buf[CMD_PKT_SZ_OFFSET] = p_size;
+  cmd_buf[CMD_PKT_SZ_OFFSET] = _packet_size;
 
   uint8_t *data_p = f->data;
   uint8_t *data_last = data_p;
 
-  int frames = f->length / p_size;
-  if (f->length % p_size != 0) {
+  int frames = f->length / _packet_size;
+  if (f->length % _packet_size != 0) {
     frames++;
   }
 
@@ -350,10 +360,10 @@ uint32_t linksprite::read_frame(data_frame *f) {
     // rx: 76 0 32 0 0
 
     i = 0;
-    while ((i < p_size) and (end_of_image == false)) {
+    while ((i < _packet_size) and (end_of_image == false)) {
       //Receive the data bytes
       _cm->receive(data_p, 1);
-      _rxbuf[i] = *data_p;
+      _rdbuf[i] = *data_p;
       i++;
       if ((*data_last == 0xFF) and (*data_p == 0xD9)) {
         end_of_image = true;
@@ -369,7 +379,7 @@ uint32_t linksprite::read_frame(data_frame *f) {
       if (_log_to_console) {
         //Show last data packet
         _dbg_msg((char *)"\nlast data packet...");
-        _dbg_msg((char *)"rx", _rxbuf, i);
+        _dbg_msg((char *)"rx", _rdbuf, i);
       }
       //Clear zeros in packet
       do {
