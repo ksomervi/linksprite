@@ -42,7 +42,7 @@ namespace blip {
 #endif
 
 #define LS_MIN_PKT_SZ 8
-#define LS_DEFAULT_PKT_SZ 32
+#define LS_DEFAULT_PKT_SZ 128 //0x80
 #define CMD_PKT_SZ_OFFSET 13 //byte in command array buffer
 
 #define ADDR2_OFFSET  7
@@ -109,7 +109,6 @@ public:
   uint32_t read_frame(data_frame*);
   uint8_t packet_size();
   void packet_size(uint8_t);
-  //uint8_t poll_comm(uint8_t*, size_t);
   uint8_t poll_comm(uint8_t*);
   uint8_t * image_buffer();
   vector< format_option > get_geometry_options();
