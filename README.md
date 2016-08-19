@@ -6,9 +6,10 @@ Console Application:
     Usage: lscon -p <serialport> [OPTIONS]
     
     Options:
-      -h, --help                   Print this help message
-      -p, --port=serialport        Serial port to the LinkSprite camera
-      -b, --baud=baudrate          Baudrate (bps) of camera (default 115200)
+      -h, --help               Print this help message
+      -l                       list available ports and exit
+      -p, --port=serialport    Serial port to the LinkSprite camera
+      -b, --baud=baudrate      Baudrate (bps) of camera (default 115200)
      lscon - Version 1.2rc
 
 Example (with debug print statements):
@@ -45,7 +46,7 @@ Example (with debug print statements):
     Downloading image ...
     image size: 28272 bytes (0x6e70)
       - Packet read size: 32
-        - Reading 884 packets
+      - Reading 884 packets
     ..........................................................................
     .....................................
     last data packet...
