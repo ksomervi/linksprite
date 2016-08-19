@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
 }// end main
 
 void show_console_help() {
+  cout << "lscon - Version " << LSCON_VERSION << endl;
   cout << "Available commands:" << endl
     << "  ?|h   show this Help message" << endl
     << "  c     Close port session" << endl
@@ -80,11 +81,11 @@ void show_console_help() {
     //<< "  m|M   Mode set" << endl
     << "  l     read Length of image (in bytes)" << endl
     << "  o     Open port session" << endl
-    << "  q     Query port status" << endl
+    << "  q     Query status" << endl
     << "  r|R   Reset the camera" << endl
     << "  s     Set image size" << endl
     << "  t|T   Take image" << endl
-    << "  v|V   Show version" << endl
+    << "  v|V   Toggle verbose output" << endl
     << "  x     eXit" << endl
     << " The rest are yet to be implemented" << endl;
 }
@@ -95,6 +96,8 @@ void start_console(configuration *cfg) {
   int rv = 0;
   uint8_t buf[32];
   linksprite * ls = new linksprite();
+  bool verbose = false;
+  const char *verbose_state[3] = {"Off", "On"};
 
   cout << "Opening port: " << cfg->serialport()
     << " at " << cfg->baudrate() << " baud\n";
@@ -133,7 +136,9 @@ void start_console(configuration *cfg) {
         if (ls->is_open()) {
           cout << "Camera port is open" << endl
           << "  - Device: " << ls->port_name() << endl
-          << "  - Baudrate: " << ls->baudrate() << endl;
+          << "  - Baudrate: " << ls->baudrate() << endl
+          << " Packet size: " << ls->packet_size() << endl
+          << " Verbose: " << verbose_state[verbose] << endl;
         }
         else {
           cout << "Camera port is closed" << endl;
@@ -156,7 +161,9 @@ void start_console(configuration *cfg) {
       case 'D':
         rv = ls->download_image();
         if (rv>0) {
-          cout << "Downloaded " << std::dec << rv << " bytes" << endl;
+          if (verbose) {
+            cout << "Downloaded " << std::dec << rv << " bytes" << endl;
+          }
           save_image_to_file(string("ls_img.jpg"), ls->image_buffer(), rv);
         }
         else {
@@ -209,13 +216,23 @@ void start_console(configuration *cfg) {
 
       case 't':
       case 'T':
-        cout << "Taking image..." << endl;
+        if (verbose) {
+          cout << "Taking image..." << endl;
+        }
         ls->take_image();
         break;
 
       case 'v':
       case 'V':
-        cout << " lscon - Version " << LSCON_VERSION << endl;
+        verbose = (verbose == false);
+        ls->log_to_console(verbose);
+        if (verbose) {
+          cout << "Verbose on" << endl;
+        }
+        else {
+          cout << "Verbose off" << endl;
+        }
+
         break;
 
       default:
@@ -286,7 +303,6 @@ int read_frame(linksprite *ls) {
 void save_image_to_file(string fname, uint8_t *buf, size_t len) {
   ofstream img_file;
   img_file.open(fname.c_str(), std::ios::out|std::ios::binary);
-
   img_file.write((const char*)buf, len);
   img_file.close();
 }//end save_image_to_file()

@@ -78,8 +78,8 @@ private:
   unsigned char _txbuf[32];
   bool _validate_msg(unsigned char * exp, unsigned char * act, int32_t n);
 
-  int32_t _packet_size;
-  int32_t _buffered_image_size;
+  size_t _packet_size;
+  size_t _buffered_image_size;
   uint8_t * _img_buffer;
   uint8_t _tx_msize;
 
@@ -104,11 +104,11 @@ public:
   void reset();
   void set_image_geometry(uint8_t);
   void take_image();
-  uint32_t read_image_size();
+  size_t read_image_size();
   int32_t download_image();
   uint32_t read_frame(data_frame*);
-  uint8_t packet_size();
-  void packet_size(uint8_t);
+  size_t packet_size();
+  void packet_size(size_t);
   uint8_t poll_comm(uint8_t*);
   uint8_t * image_buffer();
   vector< format_option > get_geometry_options();

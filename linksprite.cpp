@@ -133,7 +133,7 @@ void linksprite::reset() {
   }
 }//end reset()
 
-uint32_t linksprite::read_image_size() {
+size_t linksprite::read_image_size() {
   //TODO unsigned char vbuf[] = {0x76, 0x0, 0x34, 0x0, 0x4, 0x0};
   unsigned char txbuf[5] = {0x56, 0, 0x34, 0x01, 0};
   if (_log_to_console) {
@@ -150,7 +150,7 @@ uint32_t linksprite::read_image_size() {
   if (_log_to_console) {
     _dbg_msg((char*)"rx", _rxbuf, 9);
   }
-  uint32_t img_sz = ((uint32_t)_rxbuf[6] << 16) & 0x00FF0000;
+  size_t img_sz = ((uint32_t)_rxbuf[6] << 16) & 0x00FF0000;
   img_sz += ((uint32_t)_rxbuf[7] << 8) & 0x0000FF00;
   img_sz += (uint32_t)_rxbuf[8] & 0x000000FF;
   return img_sz;
@@ -193,10 +193,10 @@ void linksprite::take_image() {
 }//end take_image()
 
 int linksprite::download_image() {
-  int sz = 0;
+  size_t sz = 0;
   uint8_t * data_p = NULL;
   uint8_t * data_last = NULL;
-  int i = 0;
+  size_t i = 0;
   size_t expected_packets;
   size_t packet_count = 0;
   unsigned char* _rdbuf = NULL;
@@ -206,10 +206,14 @@ int linksprite::download_image() {
     0x00,                               // [6] - unused
     0x00, 0x00, 0x00,                   // [7-9] - Address of read
     0x00,                               // [10] - unused
-    0x00, 0x00, 0x20,                   // [11-13] - Size of returned to be
+    0x00, 0x00, LS_DEFAULT_PKT_SZ,      // [11-13] - Size of returned to be
                                         // read, multiple of 8
     0x00, 0x0a};                        // [14-15] - Trailer
   bool end_of_image = false;
+
+  _packet_size = ( (size_t)(cmd_buf[11]<<16) & 0x00FF0000)
+               | ( (size_t)(cmd_buf[12]<<8)  & 0x0000FF00)
+               | ( (size_t)(cmd_buf[13])     & 0x000000FF);
 
   _buffered_image_size = this->read_image_size();
 
@@ -224,10 +228,6 @@ int linksprite::download_image() {
   _img_buffer = new uint8_t[_buffered_image_size];
   data_p = _img_buffer;
   data_last = _img_buffer;
-
-  _packet_size = ( (size_t)(cmd_buf[11]<<16) & 0x00FF0000)
-               | ( (size_t)(cmd_buf[12]<<8)  & 0x0000FF00)
-               | ( (size_t)(cmd_buf[13])     & 0x000000FF);
 
   _rdbuf = new uint8_t[_packet_size];
 
@@ -288,7 +288,7 @@ int linksprite::download_image() {
       //Clear zeros in packet
       do {
         _cm->receive(_rdbuf, 1);
-      } while (_rxbuf[0] == 0);
+      } while (_rdbuf[0] == 0);
       //Receive the packet frame trailer
       _cm->receive(&_rxbuf[1], 4);
       // Expected response:
@@ -325,7 +325,7 @@ uint32_t linksprite::read_frame(data_frame *f) {
     0x00, 0x0a};                        // [14-15] - Trailer
   bool end_of_image = false;
   uint8_t * _rdbuf = NULL;
-  int i;
+  size_t i;
 
   // Frame: offset, length, *data
   int adr = f->offset;
@@ -405,11 +405,11 @@ uint32_t linksprite::read_frame(data_frame *f) {
   return sz;
 }
 
-uint8_t linksprite::packet_size() {
+size_t linksprite::packet_size() {
   return _packet_size;
 }
 
-void linksprite::packet_size(uint8_t sz) {
+void linksprite::packet_size(size_t sz) {
   size_t tmp = sz & 0x00FFFFF8;
 
   if (sz % LS_MIN_PKT_SZ) {
@@ -422,6 +422,14 @@ void linksprite::packet_size(uint8_t sz) {
 uint8_t * linksprite::image_buffer() {
   return _img_buffer;
 }//end image_buffer()
+
+void linksprite::log_to_console(bool b) {
+  _log_to_console = b;
+}//end log_to_console(bool)
+
+bool linksprite::log_to_console() {
+  return _log_to_console;
+}//end log_to_console()
 
 void linksprite::_log_tx_msg(unsigned char *s, size_t sz) {
   _tx_msize = sz;
