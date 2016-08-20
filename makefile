@@ -12,7 +12,9 @@ CXX = i686-pc-mingw32-g++
 CXXFLAGS += -DWIN32
 
 LDFLAGS = -static-libstdc++ -static-libgcc -lcm
-FL_LDFLAGS = -mwindows -lfltk -lole32 -luuid -lcomctl32 $(LDFLAGS)
+FL_LDFLAGS = -lfltk_images -lfltk_png -lfltk_z -lfltk_jpeg -lfltk
+FL_LDFLAGS += -mwindows -lole32 -luuid -lcomctl32
+FL_LDFLAGS += $(LDFLAGS)
 
 else
 CC = gcc
@@ -36,6 +38,8 @@ UI_SRC += ui_main_window.cpp
 UI_SRC += ui_linksprite_control.cpp
 UI_SRC += ui_port_control.cpp
 UI_SRC += ui_text_display.cpp
+UI_SRC += ui_image_display.cpp
+UI_SRC += ui_logging_group.cpp
 UI_SRC += linksprite.cpp
 UI_OBJ = $(subst .cpp,.o,$(UI_SRC))
 
