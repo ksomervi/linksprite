@@ -1,9 +1,9 @@
-# Makefile 
+# Makefile
 #
 
 HOST=$(shell uname -o)
 
-CXXFLAGS = -Wall -g -O3 
+CXXFLAGS = -Wall -g -O3
 
 ifeq "$(HOST)" "Cygwin"
 CC = i686-pc-mingw32-gcc
@@ -25,13 +25,13 @@ FL_LDFLAGS = $(shell fltk-config --ldstaticflags --use-images) $(LDFLAGS)
 
 endif
 
-CFLAGS = $(CXXFLAGS) -std=c99 
+CFLAGS = $(CXXFLAGS) -std=c99
 
-LSC_SRC = console_main.cpp 
+LSC_SRC = console_main.cpp
 LSC_SRC += configuration.cpp linksprite.cpp
 LSC_OBJ = $(subst cpp,o,$(LSC_SRC))
 
-UI_SRC = ui.cpp 
+UI_SRC = ui.cpp
 UI_SRC += ui_main_window.cpp
 UI_SRC += ui_linksprite_control.cpp
 UI_SRC += ui_port_control.cpp
@@ -39,7 +39,7 @@ UI_SRC += ui_text_display.cpp
 UI_SRC += linksprite.cpp
 UI_OBJ = $(subst .cpp,.o,$(UI_SRC))
 
-INCDIRS = -I/usr/local/include 
+INCDIRS = -I/usr/local/include
 LIBDIRS = -L./serialport -L/usr/local/lib
 
 SUBDIRS = serialport
@@ -68,14 +68,14 @@ lsui: $(UI_OBJ) $(SUBDIRS)
 	echo "# Linking $@ ..."
 	$(CXX) $(LIBDIRS) -o $@ $(UI_OBJ) $(FL_LDFLAGS)
 
-neat: 
+neat:
 	-rm -f *~ *.o
 
 clean: neat $(CLEANDIRS)
 	echo "# Cleaning up targets ..."
 	-rm -f ${TARGETS}{,.exe}
 
-$(CLEANDIRS): 
+$(CLEANDIRS):
 	$(MAKE) -C $(@:clean-%=%) clean
 
 subdirs: $(SUBDIRS)
