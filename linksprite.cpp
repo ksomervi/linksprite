@@ -73,8 +73,7 @@ bool linksprite::_validate_msg(unsigned char *e, unsigned char *a, int n) {
 
 linksprite::linksprite() {
   _cm = new communication_manager();
-  _buffered_image_size = INVALID_SIZE;
-  _img_buffer = NULL;
+  //_img_buffer = new image_buffer();
   _packet_size = LS_DEFAULT_PKT_SZ;
   _init_image_geometries();
   //_mlog = NULL;
@@ -189,17 +188,22 @@ void linksprite::take_image() {
   if (_log_to_console) {
     _dbg_msg((char *)"rx", _rxbuf, 5);
   }
-  _buffered_image_size = INVALID_SIZE;
+  //_buffered_image_size = INVALID_SIZE;
+  //_img_buffer->size() = INVALID_SIZE;
 }//end take_image()
 
-int linksprite::download_image() {
+image_buffer * linksprite::download_image() {
   size_t sz = 0;
+  size_t expected_sz = 0;
+  uint8_t * data_buf = NULL;
   uint8_t * data_p = NULL;
   uint8_t * data_last = NULL;
   size_t i = 0;
   size_t expected_packets;
   size_t packet_count = 0;
   unsigned char* _rdbuf = NULL;
+  
+  image_buffer *ibuf = NULL;
 
   unsigned char cmd_buf[] = {
     0x56, 0x00, 0x32, 0x0c, 0x00, 0x0a, // [0-5] - Command header
@@ -215,27 +219,24 @@ int linksprite::download_image() {
                | ( (size_t)(cmd_buf[12]<<8)  & 0x0000FF00)
                | ( (size_t)(cmd_buf[13])     & 0x000000FF);
 
-  _buffered_image_size = this->read_image_size();
+  expected_sz = this->read_image_size();
 
-  expected_packets = _buffered_image_size / _packet_size;
-  if (_buffered_image_size % _packet_size) {
+  expected_packets = expected_sz / _packet_size;
+  if (expected_sz % _packet_size) {
     expected_packets++;
   }
 
-  if (_img_buffer) {
-    delete[] _img_buffer;
-  }
-  _img_buffer = new uint8_t[_buffered_image_size];
-  data_p = _img_buffer;
-  data_last = _img_buffer;
+  data_buf = new uint8_t[expected_sz];
+  data_p = data_buf;
+  data_last = data_buf;
 
   _rdbuf = new uint8_t[_packet_size];
 
   if (_log_to_console) {
     _dbg_msg((char*)"Downloading image ...");
     cout << "image size: "
-      << std::dec << _buffered_image_size
-      << " bytes (0x" << std::hex << _buffered_image_size << ")"
+      << std::dec << expected_sz
+      << " bytes (0x" << std::hex << expected_sz << ")"
       << endl;
     cout << "  - Packet read size: " << std::dec << _packet_size << endl;
     cout << "  - Reading " << expected_packets << " packets" << endl;
@@ -269,8 +270,8 @@ int linksprite::download_image() {
         end_of_image = true;
         sz += i;
       }
-      if (sz > _buffered_image_size) {
-        cout << "ERROR: (sz > _buffered_image_size)!" << endl;
+      if (sz > expected_sz) {
+        cout << "ERROR: (sz > expected_sz)!" << endl;
         cout << "sz: " << std::dec << sz
           << " (0x" << std::hex << sz << ")" << endl;
         end_of_image = true;
@@ -309,7 +310,16 @@ int linksprite::download_image() {
     cout << "  Expected " << expected_packets << " packets!" << endl;
   }
 
-  return sz;
+  if (sz == expected_sz) {
+    ibuf = new image_buffer(data_buf, sz);
+  }
+  else {
+    cout << "sz != expected_sz: " << sz << " != " << expected_sz << endl;
+  }
+
+  delete[] _rdbuf;
+
+  return ibuf;
 }//end download_image()
 
 //Currently unused, stay tuned.
@@ -419,9 +429,9 @@ void linksprite::packet_size(size_t sz) {
   _packet_size = tmp;
 }
 
-uint8_t * linksprite::image_buffer() {
-  return _img_buffer;
-}//end image_buffer()
+//image_buffer * linksprite::get_image_buffer() {
+  //return _img_buffer;
+//}//end image_buffer()
 
 void linksprite::log_to_console(bool b) {
   _log_to_console = b;

@@ -10,12 +10,12 @@
 
 #include "ui.h"
 
-// COMPILE: fltk-config --use-images --compile load-jpeg.cxx
 int main() {
   // initialize image lib
   fl_register_images();
   // make a window
-  Ui_Main_Window * w = new Ui_Main_Window(MAIN_WIN_W, MAIN_WIN_H, "Link Sprite Camera Controller");
+  Ui_Main_Window * w = new Ui_Main_Window(MAIN_WIN_W, MAIN_WIN_H,
+      "Link Sprite Camera Controller");
   w->initialize();
   w->show();
   return(Fl::run());

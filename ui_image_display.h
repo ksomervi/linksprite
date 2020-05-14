@@ -12,6 +12,10 @@
 #include <FL/Fl_Shared_Image.H>
 #include <FL/Fl_Window.H>
 
+#include <cstdint>
+#include <string>
+using std::string;
+
 class Ui_Image_Display: public Fl_Box {
   private:
     Fl_JPEG_Image * _image;
@@ -19,5 +23,7 @@ class Ui_Image_Display: public Fl_Box {
   public:
     Ui_Image_Display(int, int, int, int);
 
+    void load_image(string);
+    void set_image(uint8_t *);
 };
 #endif //!define(UI_IMAGE_DISPLAY_H)

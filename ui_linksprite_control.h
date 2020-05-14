@@ -13,11 +13,13 @@
 #include <FL/Fl_Progress.H>
 
 #include "ui_defines.h"
+#include "ui_image_display.h"
 #include "ui_logging_group.h"
 #include "ui_text_display.h"
 
 #include "linksprite.h"
 using blip::linksprite;
+using blip::image_buffer;
 
 #define UI_MAX_PORTS 15
 
@@ -32,36 +34,25 @@ using blip::linksprite;
 class Ui_Linksprite_Control : public Ui_Logging_Group {
 
   private:
-  /*
-    class _port_desc {
-      public:
-      int index;
-      char * name;
-    };
-
-    // Serial port configuration
-    //Fl_Light_Button * _cport_ctrl_b;
-    //Fl_Choice * _cport_ch;
-    //Fl_Choice * _cbaud_ch;
-    */
     linksprite *_ls;
 
     // Image parameters
     Fl_Choice * _isize_ch;
     Fl_Check_Button * _conlog_checkbutton;
-    Fl_Input  * _ifname_in;
     Fl_Progress * _iprogress;
 
-    char _scratch_buf[256];
-    //int _ports[UI_MAX_PORTS];
-    //Ui_Text_Display * _log_buf;
+    Ui_Image_Display* _img_display;
 
-    //void _log(const char*);
+    char _scratch_buf[256];
+    image_buffer * _img_buf;
 
   protected:
     // Callback routines
     //inline void aux_cport_ctrl_cb (Fl_Widget *w, void *data);
     static void image_capture_cb (Fl_Widget * w, void *data);
+    static void load_img_cb (Fl_Widget * w, void *data);
+    static void save_img_cb (Fl_Widget * w, void *data);
+    //inline void aux_download_cb (Fl_Widget *w, void *data);
     static void download_cb (Fl_Widget * w, void *data);
     void set_geometry_cb (Fl_Widget * w, void *data);
     static void console_log_cb(Fl_Widget * w, void *data);
@@ -71,6 +62,9 @@ class Ui_Linksprite_Control : public Ui_Logging_Group {
     int initialize();
     void resize(int, int, int, int);
     linksprite * linksprite_handle();
+
+    void image_display(Ui_Image_Display *);
+    Ui_Image_Display * image_display();
 
 };
 

@@ -32,6 +32,7 @@ using std::ostream;
 #include <string>
 using std::string;
 
+#include "image_buffer.h"
 #include "serialport/communication_manager.h"
 //#include "ostream_log.h"
 
@@ -70,8 +71,6 @@ private:
   communication_manager * _cm;
   vector< format_option > _img_geometries;
 
-  //base_log * _mlog;
-
   void _init_image_geometries();
 
   unsigned char _rxbuf[32];//used for debugging
@@ -79,8 +78,6 @@ private:
   bool _validate_msg(unsigned char * exp, unsigned char * act, int32_t n);
 
   size_t _packet_size;
-  size_t _buffered_image_size;
-  uint8_t * _img_buffer;
   uint8_t _tx_msize;
 
   void _log_tx_msg(unsigned char *, size_t);
@@ -105,12 +102,12 @@ public:
   void set_image_geometry(uint8_t);
   void take_image();
   size_t read_image_size();
-  int32_t download_image();
+  image_buffer * download_image();
   uint32_t read_frame(data_frame*);
   size_t packet_size();
   void packet_size(size_t);
   uint8_t poll_comm(uint8_t*);
-  uint8_t * image_buffer();
+  image_buffer * get_image_buffer();
   vector< format_option > get_geometry_options();
 
   void log_to_console(bool);

@@ -30,7 +30,9 @@ endif
 CFLAGS = $(CXXFLAGS) -std=c99
 
 LSC_SRC = console_main.cpp
-LSC_SRC += configuration.cpp linksprite.cpp
+LSC_SRC += configuration.cpp
+LSC_SRC += image_buffer.cpp
+LSC_SRC += linksprite.cpp
 LSC_OBJ = $(subst cpp,o,$(LSC_SRC))
 
 UI_SRC = ui.cpp
@@ -40,11 +42,12 @@ UI_SRC += ui_port_control.cpp
 UI_SRC += ui_text_display.cpp
 UI_SRC += ui_image_display.cpp
 UI_SRC += ui_logging_group.cpp
+UI_SRC += image_buffer.cpp
 UI_SRC += linksprite.cpp
 UI_OBJ = $(subst .cpp,.o,$(UI_SRC))
 
-INCDIRS = -I/usr/local/include
-LIBDIRS = -L./serialport -L/usr/local/lib
+#INCDIRS = -I/usr/local/include
+LIBDIRS = -L./serialport #-L/usr/local/lib
 
 SUBDIRS = serialport
 

@@ -8,7 +8,7 @@
 #define MAIN_WIN_H 305
 
 #define WIDGET_MARGIN 5
-#define BUTTON_W 75
+#define BUTTON_W 95
 #define BUTTON_H 25
 
 #endif //!define(UI_DEFINES_H)

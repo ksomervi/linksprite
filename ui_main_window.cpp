@@ -12,6 +12,7 @@ Ui_Main_Window::Ui_Main_Window (int W, int H, const char*L=0) :
   int y = 20;
   int w = 340;
   int h = 50;
+
   _pc = new Ui_Port_Control(x, y, w, h);
   add(_pc);
 
@@ -52,18 +53,30 @@ Ui_Main_Window::Ui_Main_Window (int W, int H, const char*L=0) :
   h = MAIN_WIN_H - 10;
 
   _disp = new Ui_Image_Display(x, y, w, h);
+  _disp->load_image(string("test_img.jpg"));
 
+  _ls_ctrl->image_display(_disp);
+  add(_disp);
 }
+
+#include <iostream>
+using std::cerr;
+using std::endl;
 
 void Ui_Main_Window::initialize() {
   int rv = 0;
   // Clear the status display
   _status->clear();
+  cerr << "cleared stats" << endl;
 
+  cerr << "initializing port controller ..." << endl;
   rv = _pc->initialize();
+  cerr << "initialized port controller ..." << endl;
   // Initialize the serial ports
   if (rv == 0) {
     _status->append("Error: no ports found!\n");
   }
+  cerr << "initializing linksprite controller ..." << endl;
   rv = _ls_ctrl->initialize();
+  cerr << "initialized linksprite controller ..." << endl;
 }

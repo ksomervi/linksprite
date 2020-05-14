@@ -6,6 +6,8 @@
 // Date: Thu Apr  9 15:28:04 EDT 2015
 //
 
+#include <ctime>
+
 #include <iostream>
 using std::cout;
 using std::cin;
@@ -26,8 +28,9 @@ using std::string;
 #include "configuration.h"
 #include "linksprite.h"
 using blip::linksprite;
+using blip::image_buffer;
 
-#define LSCON_VERSION  "1.2rc"
+#define LSCON_VERSION  "1.3rc"
 
 void usage(void) {
     cout << "Usage: lscon -p <serialport> [OPTIONS]\n"
@@ -42,9 +45,9 @@ void usage(void) {
 }//end usage(void)
 
 int read_frame(linksprite*);
-void save_image_to_file(string, uint8_t*, size_t);
 void set_image_geometry(linksprite *);
 void start_console(configuration *);
+string timestamp();
 
 int main(int argc, char *argv[]) {
     configuration * cfg = new configuration();
@@ -98,6 +101,7 @@ void start_console(configuration *cfg) {
   linksprite * ls = new linksprite();
   bool verbose = false;
   const char *verbose_state[3] = {"Off", "On"};
+  image_buffer * ibuf;
 
   cout << "Opening port: " << cfg->serialport()
     << " at " << cfg->baudrate() << " baud\n";
@@ -159,12 +163,12 @@ void start_console(configuration *cfg) {
 
       case 'd':
       case 'D':
-        rv = ls->download_image();
-        if (rv>0) {
+        ibuf = ls->download_image();
+        if (ibuf->size() > 0) {
           if (verbose) {
-            cout << "Downloaded " << std::dec << rv << " bytes" << endl;
+            cout << "Downloaded " << std::dec << ibuf->size() << " bytes" << endl;
           }
-          save_image_to_file(string("ls_img.jpg"), ls->image_buffer(), rv);
+          ibuf->save_to_file(string("ls_img.jpg"));
         }
         else {
           cout << "Failed to download image!" << endl;
@@ -276,11 +280,11 @@ void set_image_geometry(linksprite *ls) {
   ls->set_image_geometry(geoms[sz].value);
 }//end set_image_geometry()
 
-void download_image(linksprite *ls) {
-  int rv = ls->download_image();
+void download_image(linksprite *ls) { //unused
+  image_buffer *ibuf = ls->download_image();
   string image_filename = "ls_img.jpg";
-  cout << "Downloaded " << std::dec << rv << " bytes" << endl;
-  save_image_to_file(image_filename, ls->image_buffer(), rv);
+  cout << "Downloaded " << std::dec << ibuf->size() << " bytes" << endl;
+  ibuf->save_to_file(image_filename);
   cout << "Image saved to " << image_filename << endl;
 }
 
@@ -300,9 +304,13 @@ int read_frame(linksprite *ls) {
   return rd;
 }//end read_frame
 
-void save_image_to_file(string fname, uint8_t *buf, size_t len) {
-  ofstream img_file;
-  img_file.open(fname.c_str(), std::ios::out|std::ios::binary);
-  img_file.write((const char*)buf, len);
-  img_file.close();
-}//end save_image_to_file()
+string timestamp() {
+  time_t timer;
+  struct tm * timeinfo;
+  char tbuf[12];
+
+  time(&timer);
+  timeinfo = localtime(&timer);
+  strftime(tbuf, 12, "%F", timeinfo);
+  return string(tbuf);
+}
