@@ -46,9 +46,9 @@ Ui_Linksprite_Control::Ui_Linksprite_Control(int x, int y, int w, int h) :
   _idownload_b->callback(download_cb, (void*)this);
   */
 
-  Fl_Button* _isave_b = new Fl_Button(120, 110, 
-      BUTTON_W, BUTTON_H, "Save Image");
+  _isave_b = new Fl_Button(120, 110, BUTTON_W, BUTTON_H, "Save Image");
   _isave_b->callback(save_img_cb, (void*)this);
+  _isave_b->deactivate();
 
   Fl_Button* _iload_b = new Fl_Button(225, 110, 
       BUTTON_W, BUTTON_H, "Load Image");
@@ -122,6 +122,7 @@ void Ui_Linksprite_Control::save_img_cb (Fl_Widget * w, void *data){
 // TODO: not sure this is needed. Consider deleting this function
 // BODY: There's not a good use case for downloading an image separate from
 // capturing one.
+/*
 void Ui_Linksprite_Control::download_cb (Fl_Widget * w, void *data) {
   Ui_Linksprite_Control *lsc = (Ui_Linksprite_Control*)data;
   linksprite *lsh = lsc->linksprite_handle();
@@ -129,13 +130,15 @@ void Ui_Linksprite_Control::download_cb (Fl_Widget * w, void *data) {
     delete lsc->_img_buf;
     lsc->_img_buf = NULL;
   }
-  lsc->_img_buf = lsh->download_image();
+    
+  int rv = lsh->download_image(lsc->_img_buf->data(), 0);
   if (lsc->_img_buf) {
     sprintf(lsc->_scratch_buf, "Downloaded %ld bytes\n", lsc->_img_buf->size());
 
     lsc->image_display()->set_image(lsc->_img_buf->data());
     lsc->image_display()->redraw();
     lsc->_log("update image display\n");
+    lsc->_isave_b->activate();
   }
   else{
     sprintf(lsc->_scratch_buf, "Failed to download image!\n");
@@ -143,6 +146,7 @@ void Ui_Linksprite_Control::download_cb (Fl_Widget * w, void *data) {
 
   lsc->_log(lsc->_scratch_buf);
 }//end download_cb()
+*/
 
 int Ui_Linksprite_Control::initialize() {
   int rv = 0;
@@ -185,16 +189,19 @@ void Ui_Linksprite_Control::image_capture_cb (Fl_Widget *w, void *data) {
     delete lsc->_img_buf;
   }
 
-  lsc->_img_buf = ls->download_image();
+  lsc->_img_buf = new image_buffer(new uint8_t[len], len);
+
+  int dl_sz = ls->download_image(lsc->_img_buf->data(), len);
   lsc->_iprogress->value(1.0);
   lsc->_iprogress->redraw();
-  if (lsc->_img_buf) {
-    sprintf(lsc->_scratch_buf, "Downloaded %ld bytes\n", lsc->_img_buf->size());
+  if (dl_sz == len) {
+    sprintf(lsc->_scratch_buf, "Downloaded %d bytes\n", dl_sz);
     lsc->_log(lsc->_scratch_buf);
 
     lsc->image_display()->set_image(lsc->_img_buf->data());
     lsc->image_display()->redraw();
     lsc->_log("Updated image display\n");
+    lsc->_isave_b->activate();
   }
   else{
     lsc->_log("Failed to download image!\n");

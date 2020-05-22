@@ -44,7 +44,8 @@ void usage(void) {
       << "\n";
 }//end usage(void)
 
-int read_frame(linksprite*);
+void download_image(linksprite *, bool);
+int read_frame(linksprite *);
 void set_image_geometry(linksprite *);
 void start_console(configuration *);
 string timestamp();
@@ -84,6 +85,8 @@ void show_console_help() {
     //<< "  m|M   Mode set" << endl
     << "  l     read Length of image (in bytes)" << endl
     << "  o     Open port session" << endl
+    << "  p     Set packet size" << endl
+    << "  P     Poll serial port" << endl
     << "  q     Query status" << endl
     << "  r|R   Reset the camera" << endl
     << "  s     Set image size" << endl
@@ -101,12 +104,11 @@ void start_console(configuration *cfg) {
   linksprite * ls = new linksprite();
   bool verbose = false;
   const char *verbose_state[3] = {"Off", "On"};
-  image_buffer * ibuf;
 
   cout << "Opening port: " << cfg->serialport()
     << " at " << cfg->baudrate() << " baud\n";
   if (ls->open(cfg->serialport(), cfg->baudrate())) {
-    cout << "console started ..." << endl;
+    cout << "console started " << timestamp() << " ..." << endl;
   }
   else {
     cout << "Failed to open port!" << endl;
@@ -114,7 +116,7 @@ void start_console(configuration *cfg) {
   }
 
   while (running) {
-    cout << "]> ";
+    cout << "[" << timestamp() << "]> ";
     cin >> cmd;
 
     switch(cmd) {
@@ -163,16 +165,7 @@ void start_console(configuration *cfg) {
 
       case 'd':
       case 'D':
-        ibuf = ls->download_image();
-        if (ibuf->size() > 0) {
-          if (verbose) {
-            cout << "Downloaded " << std::dec << ibuf->size() << " bytes" << endl;
-          }
-          ibuf->save_to_file(string("ls_img.jpg"));
-        }
-        else {
-          cout << "Failed to download image!" << endl;
-        }
+        download_image(ls, verbose);
         break;
 
       case 'f':
@@ -201,6 +194,12 @@ void start_console(configuration *cfg) {
         break;
 
       case 'p':
+        rv = LS_DEFAULT_PKT_SZ;
+        cout << "Enter packet size [multiple of 8]: ";
+        cin >> rv;
+        ls->packet_size(rv);
+        break;
+
       case 'P':
         rv = ls->poll_comm(buf);
         if (rv > 0) {
@@ -280,13 +279,25 @@ void set_image_geometry(linksprite *ls) {
   ls->set_image_geometry(geoms[sz].value);
 }//end set_image_geometry()
 
-void download_image(linksprite *ls) { //unused
-  image_buffer *ibuf = ls->download_image();
-  string image_filename = "ls_img.jpg";
-  cout << "Downloaded " << std::dec << ibuf->size() << " bytes" << endl;
-  ibuf->save_to_file(image_filename);
-  cout << "Image saved to " << image_filename << endl;
-}
+void download_image(linksprite *ls, bool verbose=false) {
+  int size = ls->read_image_size();
+  image_buffer *ibuf = new image_buffer(new uint8_t[size], size);
+
+  size = ls->download_image(ibuf->data(), ibuf->size());
+  if (size > 0) {
+    if (verbose) {
+      cout << "Downloaded " << std::dec << size << " bytes" << endl;
+    }
+    string filename = string("ls_img-") + timestamp() + ".jpg";
+    ibuf->save_to_file(filename);
+    cout << "  saved image to: " << filename << endl;
+    ibuf = nullptr;
+  }
+  else {
+    cout << "Failed to download image!" << endl;
+  }
+  delete ibuf;
+}//end download_image()
 
 int read_frame(linksprite *ls) {
   linksprite::data_frame * df = new linksprite::data_frame;
@@ -299,7 +310,7 @@ int read_frame(linksprite *ls) {
   df->data = new uint8_t[df->length];
   int rd = ls->read_frame(df);
   delete[] df->data;
-  df->data = NULL;
+  df->data = nullptr;
   delete df;
   return rd;
 }//end read_frame
@@ -307,10 +318,13 @@ int read_frame(linksprite *ls) {
 string timestamp() {
   time_t timer;
   struct tm * timeinfo;
-  char tbuf[12];
+  char tbuf[48];
 
   time(&timer);
   timeinfo = localtime(&timer);
-  strftime(tbuf, 12, "%F", timeinfo);
+  int seconds = (((timeinfo->tm_hour*60) + timeinfo->tm_min)*60) + timeinfo->tm_sec;
+  
+  sprintf(tbuf, "%d-%02d-%02d.%05d", timeinfo->tm_year+1900, 
+      timeinfo->tm_mon+1, timeinfo->tm_mday, seconds);
   return string(tbuf);
 }

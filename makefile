@@ -63,7 +63,7 @@ TARGETS = lscon lsui
 
 .PHONY: default all neat clean subdirs $(SUBDIRS)
 
-default: lscon
+default: all
 
 all: $(TARGETS)
 

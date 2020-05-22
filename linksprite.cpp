@@ -192,18 +192,16 @@ void linksprite::take_image() {
   //_img_buffer->size() = INVALID_SIZE;
 }//end take_image()
 
-image_buffer * linksprite::download_image() {
+int linksprite::download_image(uint8_t *ibuf, size_t len) {
   size_t sz = 0;
   size_t expected_sz = 0;
-  uint8_t * data_buf = NULL;
+  //uint8_t * data_buf = NULL;
   uint8_t * data_p = NULL;
   uint8_t * data_last = NULL;
   size_t i = 0;
   size_t expected_packets;
   size_t packet_count = 0;
   unsigned char* _rdbuf = NULL;
-  
-  image_buffer *ibuf = NULL;
 
   unsigned char cmd_buf[] = {
     0x56, 0x00, 0x32, 0x0c, 0x00, 0x0a, // [0-5] - Command header
@@ -215,20 +213,26 @@ image_buffer * linksprite::download_image() {
     0x00, 0x0a};                        // [14-15] - Trailer
   bool end_of_image = false;
 
-  _packet_size = ( (size_t)(cmd_buf[11]<<16) & 0x00FF0000)
-               | ( (size_t)(cmd_buf[12]<<8)  & 0x0000FF00)
-               | ( (size_t)(cmd_buf[13])     & 0x000000FF);
+  //_packet_size = ( (size_t)(cmd_buf[11]<<16) & 0x00FF0000)
+               //| ( (size_t)(cmd_buf[12]<<8)  & 0x0000FF00)
+               //| ( (size_t)(cmd_buf[13])     & 0x000000FF);
 
-  expected_sz = this->read_image_size();
+   
+  cmd_buf[11] = (_packet_size>>16) & 0xFF;
+  cmd_buf[12] = (_packet_size>>8) & 0xFF;
+  cmd_buf[13] = (_packet_size) & 0xFF;
+
+  //expected_sz = this->read_image_size();
+  expected_sz = len;
 
   expected_packets = expected_sz / _packet_size;
   if (expected_sz % _packet_size) {
     expected_packets++;
   }
 
-  data_buf = new uint8_t[expected_sz];
-  data_p = data_buf;
-  data_last = data_buf;
+  //data_buf = new uint8_t[expected_sz];
+  data_p = ibuf;
+  data_last = ibuf;
 
   _rdbuf = new uint8_t[_packet_size];
 
@@ -310,16 +314,16 @@ image_buffer * linksprite::download_image() {
     cout << "  Expected " << expected_packets << " packets!" << endl;
   }
 
-  if (sz == expected_sz) {
-    ibuf = new image_buffer(data_buf, sz);
-  }
-  else {
+  if (sz != expected_sz) {
+    //ibuf = new image_buffer(data_buf, sz);
+  //}
+  //else {
     cout << "sz != expected_sz: " << sz << " != " << expected_sz << endl;
   }
 
   delete[] _rdbuf;
 
-  return ibuf;
+  return sz;
 }//end download_image()
 
 //Currently unused, stay tuned.
@@ -339,7 +343,6 @@ uint32_t linksprite::read_frame(data_frame *f) {
 
   // Frame: offset, length, *data
   int adr = f->offset;
-  //int p_size = packet_size();
   _rdbuf = new uint8_t[_packet_size];
   /*
   if (_log_stream) {
@@ -424,7 +427,7 @@ void linksprite::packet_size(size_t sz) {
 
   if (sz % LS_MIN_PKT_SZ) {
     cout << "Correcting packet size to be 8-byte aligned!" << endl;
-    tmp += 8;
+    cout << "Adjusted to " << tmp;
   }
   _packet_size = tmp;
 }

@@ -42,6 +42,7 @@ class Ui_Linksprite_Control : public Ui_Logging_Group {
     Fl_Progress * _iprogress;
 
     Ui_Image_Display* _img_display;
+    Fl_Button* _isave_b;
 
     char _scratch_buf[256];
     image_buffer * _img_buf;
@@ -53,7 +54,7 @@ class Ui_Linksprite_Control : public Ui_Logging_Group {
     static void load_img_cb (Fl_Widget * w, void *data);
     static void save_img_cb (Fl_Widget * w, void *data);
     //inline void aux_download_cb (Fl_Widget *w, void *data);
-    static void download_cb (Fl_Widget * w, void *data);
+    //static void download_cb (Fl_Widget * w, void *data);
     void set_geometry_cb (Fl_Widget * w, void *data);
     static void console_log_cb(Fl_Widget * w, void *data);
 

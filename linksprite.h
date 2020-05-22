@@ -102,7 +102,7 @@ public:
   void set_image_geometry(uint8_t);
   void take_image();
   size_t read_image_size();
-  image_buffer * download_image();
+  int download_image(uint8_t *, size_t);
   uint32_t read_frame(data_frame*);
   size_t packet_size();
   void packet_size(size_t);
