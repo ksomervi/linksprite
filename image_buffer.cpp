@@ -10,6 +10,7 @@
 using std::ofstream;
 
 #include <ios>
+using std::ios;
 
 namespace blip {
 
@@ -41,7 +42,7 @@ uint8_t * image_buffer::data() {
 
 void image_buffer::save_to_file(string fname) {
   ofstream img_file;
-  img_file.open(fname.c_str(), std::ios::out|std::ios::binary);
+  img_file.open(fname.c_str(), ios::out|ios::binary);
   img_file.write((const char*)_data, _len);
   img_file.close();
 }//end save_to_file()

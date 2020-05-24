@@ -49,12 +49,9 @@ class Ui_Linksprite_Control : public Ui_Logging_Group {
 
   protected:
     // Callback routines
-    //inline void aux_cport_ctrl_cb (Fl_Widget *w, void *data);
     static void image_capture_cb (Fl_Widget * w, void *data);
     static void load_img_cb (Fl_Widget * w, void *data);
     static void save_img_cb (Fl_Widget * w, void *data);
-    //inline void aux_download_cb (Fl_Widget *w, void *data);
-    //static void download_cb (Fl_Widget * w, void *data);
     void set_geometry_cb (Fl_Widget * w, void *data);
     static void console_log_cb(Fl_Widget * w, void *data);
 

@@ -35,14 +35,6 @@ Ui_Main_Window::Ui_Main_Window (int W, int H, const char*L=0) :
 
   _ls_ctrl->log_buffer(_status);
 
- /*
-  _status = new Ui_Text_Display(top_row->x(),
-                                _text->h()+_text->y(),
-                                this->w()-10,
-                                120,
-                                NULL);
-                                */
-
   // Make the main window resizable
   resizable(_status);
   _ls_ctrl->deactivate();

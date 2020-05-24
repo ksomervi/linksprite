@@ -18,63 +18,58 @@ Ui_Linksprite_Control::Ui_Linksprite_Control(int x, int y, int w, int h) :
   int width = BUTTON_W;
   int height = BUTTON_H;
 
-  _conlog_checkbutton = new Fl_Check_Button(x_loc, y_loc, 80, 25, "Debug");
+  _conlog_checkbutton = new Fl_Check_Button(x_loc, y_loc, 70, 25, "Debug");
   _conlog_checkbutton->tooltip("Print linksprite debug messages to the console.");
   _conlog_checkbutton->value(_ls->log_to_console());
   _conlog_checkbutton->callback(console_log_cb, (void*)this);
 
-  width = 100;
+  width = 110;
   x_loc = x+w-(width+55)-WIDGET_MARGIN;
-  _isize_ch = new Fl_Choice(x_loc, y_loc, width, height,
-                            "Image Size");
-  //_isize_ch->down_box(FL_BORDER_BOX);
+  _isize_ch = new Fl_Choice(x_loc, y_loc, width, height, "Image Size");
 
   x_loc += _isize_ch->w()+WIDGET_MARGIN;
   width = w-x_loc;
   Fl_Button* _iset_b = new Fl_Button(x_loc, y_loc, width, height, "Set");
   _iset_b->tooltip("Set image size.");
 
-  Fl_Button* _icapture_b = new Fl_Button(15, 110,
+  x_loc = x+WIDGET_MARGIN;
+  y_loc += BUTTON_H + WIDGET_MARGIN;
+  Fl_Button* _icapture_b = new Fl_Button(x_loc, y_loc,
       BUTTON_W, BUTTON_H, "Capture");
   _icapture_b->tooltip("Capture image.");
   _icapture_b->callback(image_capture_cb, (void*)this);
 
-  /*
-  Fl_Button* _idownload_b = new Fl_Button(120, 110,
-      BUTTON_W, BUTTON_H, "Download");
-  _idownload_b->tooltip("Download buffered image to file.");
-  _idownload_b->callback(download_cb, (void*)this);
-  */
-
-  _isave_b = new Fl_Button(120, 110, BUTTON_W, BUTTON_H, "Save Image");
-  _isave_b->callback(save_img_cb, (void*)this);
-  _isave_b->deactivate();
-
-  Fl_Button* _iload_b = new Fl_Button(225, 110, 
-      BUTTON_W, BUTTON_H, "Load Image");
-  _iload_b->callback(load_img_cb, (void*)this);
-
-  //_ifname_in = new Fl_Input(105, 105, 235, BUTTON_H);
-  //_ifname_in->tooltip("Filename...");
-  _iprogress = new Fl_Progress(15, 145, 235, BUTTON_H);
+  x_loc += _icapture_b->w() + WIDGET_MARGIN;
+  width = w - x_loc;
+  _iprogress = new Fl_Progress(x_loc, y_loc, width, BUTTON_H);
   _iprogress->selection_color((Fl_Color)4);
   _iprogress->minimum(0.0);
   _iprogress->value(0.0);
+
+  x_loc = x+WIDGET_MARGIN;
+  y_loc += BUTTON_H + WIDGET_MARGIN;// 110??
+  _isave_b = new Fl_Button(x_loc, y_loc, BUTTON_W, BUTTON_H, "Save Image");
+  _isave_b->callback(save_img_cb, (void*)this);
+  _isave_b->deactivate();
+
+  x_loc += _isave_b->w() + WIDGET_MARGIN;
+  Fl_Button* _iload_b = new Fl_Button(x_loc, y_loc, 
+      BUTTON_W, BUTTON_H, "Load Image");
+  _iload_b->callback(load_img_cb, (void*)this);
+
 
   add(_conlog_checkbutton);
   add(_isize_ch);
   add(_iset_b);
   add(_icapture_b);
-  //add(_idownload_b);
+  add(_iprogress);
   add(_isave_b);
   add(_iload_b);
-  //add(_ifname_in);
-  add(_iprogress);
 
   end();
 
   _img_buf = nullptr;
-}
+}//end Ui_Linksprite_Control()
 
 
 void Ui_Linksprite_Control::console_log_cb(Fl_Widget * w, void *data) {
@@ -90,8 +85,6 @@ void Ui_Linksprite_Control::console_log_cb(Fl_Widget * w, void *data) {
   lsh->log_to_console(v);
 }//end console_log_cb()
 
-#include <fstream>
-#include <ios>
 
 void Ui_Linksprite_Control::load_img_cb (Fl_Widget * w, void *data){
   Ui_Linksprite_Control *lsc = (Ui_Linksprite_Control*)data;
@@ -119,35 +112,6 @@ void Ui_Linksprite_Control::save_img_cb (Fl_Widget * w, void *data){
 }//end save_img_cb()
 
 
-// TODO: not sure this is needed. Consider deleting this function
-// BODY: There's not a good use case for downloading an image separate from
-// capturing one.
-/*
-void Ui_Linksprite_Control::download_cb (Fl_Widget * w, void *data) {
-  Ui_Linksprite_Control *lsc = (Ui_Linksprite_Control*)data;
-  linksprite *lsh = lsc->linksprite_handle();
-  if (lsc->_img_buf) {
-    delete lsc->_img_buf;
-    lsc->_img_buf = NULL;
-  }
-    
-  int rv = lsh->download_image(lsc->_img_buf->data(), 0);
-  if (lsc->_img_buf) {
-    sprintf(lsc->_scratch_buf, "Downloaded %ld bytes\n", lsc->_img_buf->size());
-
-    lsc->image_display()->set_image(lsc->_img_buf->data());
-    lsc->image_display()->redraw();
-    lsc->_log("update image display\n");
-    lsc->_isave_b->activate();
-  }
-  else{
-    sprintf(lsc->_scratch_buf, "Failed to download image!\n");
-  }
-
-  lsc->_log(lsc->_scratch_buf);
-}//end download_cb()
-*/
-
 int Ui_Linksprite_Control::initialize() {
   int rv = 0;
   _log("initializing camera control...\n");
@@ -157,6 +121,7 @@ int Ui_Linksprite_Control::initialize() {
         geoms[i].desc.c_str(), geoms[i].value);
     _isize_ch->add(geoms[i].desc.c_str(),0,0);
   }
+  _ls->packet_size(256);
   _isize_ch->value(0);
   return rv;
 }
@@ -213,14 +178,7 @@ Ui_Image_Display * Ui_Linksprite_Control::image_display() {
   return _img_display;
 }//end image_display()
 
+
 void Ui_Linksprite_Control::image_display(Ui_Image_Display *id) {
   _img_display = id;
 }//end image_display()
-/*
-void Ui_Linksprite_Control::_log(const char * s) {
-  if (_log_buf != NULL) {
-    _log_buf->append(s);
-  }
-}
-
-*/
